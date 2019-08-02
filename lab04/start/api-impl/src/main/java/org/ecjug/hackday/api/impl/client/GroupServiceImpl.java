@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.ecjug.hackday.api.GroupService;
 import org.ecjug.hackday.api.impl.CountryApi;
 import org.ecjug.hackday.api.impl.MeetUpApi;
+import org.ecjug.hackday.api.impl.MemberApi;
 import org.ecjug.hackday.domain.model.Country;
 import org.ecjug.hackday.domain.model.Group;
 import org.ecjug.hackday.domain.model.Member;
@@ -42,18 +43,30 @@ public class GroupServiceImpl implements GroupService {
 
     @Inject
     private GroupRepository groupRepository;
-    @Inject
-    private MemberRepository memberRepository;
+    
+//    @Inject
+//    private MemberRepository memberRepository;
+    
     @Inject
     @RestClient //RestClient with injection
     private CountryApi countryApi;
+    
+    @Inject
+    @RestClient //RestClient with injection
+    private MemberApi memberApi;
+    
     @Inject
     @ConfigProperty(name = "meetup.url", defaultValue = "https://api.meetup.com")
     private String meetUpApiUrl;
+    
     @Inject
     @ConfigProperty(name = "meetup.key")
     private String meetUpApiKey;
+    
+    
     private Client restClient;
+    
+    
 
     @Override
     @SneakyThrows
@@ -89,9 +102,9 @@ public class GroupServiceImpl implements GroupService {
     @Override
     @Metered
     public List<Member> loadMembersFromMeetUpGroup(Group group) {
-        List<HashMap> membersFromMeetUp = meetUpApi().members(group.getUrlname());
+    	List<HashMap> membersFromMeetUp = meetUpApi().members(group.getUrlname());
         List<Member> memberList = toMemberList(membersFromMeetUp);
-        memberList.forEach(memberRepository::add);
+        memberList.forEach(memberApi::add);
         group.setMembersList(memberList);
         groupRepository.update(group);
         return memberList;
@@ -100,12 +113,12 @@ public class GroupServiceImpl implements GroupService {
     @Override
     @Metered
     public void addMemberToGroup(String groupId, Member member) {
-        final Member memberFromDB = memberRepository.add(member);
-        Optional<Group> groupOptional = groupRepository.byId(groupId);
-        groupOptional.ifPresent(group -> {
-            group.addMember(memberFromDB);
-            groupRepository.update(group);
-        });
+    	  final Member memberFromDB = memberApi.add(member);
+          Optional<Group> groupOptional = groupRepository.byId(groupId);
+          groupOptional.ifPresent(group -> {
+              group.addMember(memberFromDB);
+              groupRepository.update(group);
+          });
     }
 
     @Override

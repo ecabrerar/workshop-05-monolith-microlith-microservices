@@ -25,13 +25,19 @@ public class MemberResource {
 
     @GET
     @Path("/list")
+    @Counted(monotonic = true)
+    @Operation(summary = "List all Members")
     public List<Member> listMembers() {
         return membersService.list();
     }
 
     @POST
     @Path("/add")
-    public Member addMember(Member member) {
+    @Counted(monotonic = true)
+    @Operation(summary = "Creates a new Member")
+    public Member addMember(@RequestBody(description = "Specify the values to create a new Member",
+            content = @Content(mediaType = MediaType.APPLICATION_JSON,
+            schema = @Schema(implementation = Member.class))) Member member) {
         return membersService.add(member);
     }
 }

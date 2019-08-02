@@ -1,4 +1,4 @@
-package org.ecjug.hackday.app.resources;
+package org.ecjug.member.app;
 
 import org.ecjug.hackday.api.MembersService;
 import org.ecjug.hackday.domain.model.Member;
